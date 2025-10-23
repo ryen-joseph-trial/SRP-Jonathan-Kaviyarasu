@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getCurrentUser, signOut, getWorkouts, getMeals } from "@/lib/storage";
-import { Activity, Apple, Dumbbell, TrendingUp, LogOut, Menu } from "lucide-react";
+import { Activity, Apple, Dumbbell, TrendingUp, LogOut, Menu, Camera } from "lucide-react";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -89,10 +89,18 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Link to="/posture">
+            <Card className="p-8 text-center hover:shadow-glow transition-all cursor-pointer gradient-card">
+              <Camera className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-bold mb-2">Posture Check</h3>
+              <p className="text-muted-foreground">Analyze your form with AI</p>
+            </Card>
+          </Link>
+
           <Link to="/exercises">
             <Card className="p-8 text-center hover:shadow-glow transition-all cursor-pointer gradient-card">
-              <Dumbbell className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <Dumbbell className="w-12 h-12 mx-auto mb-4 text-secondary" />
               <h3 className="text-xl font-bold mb-2">Browse Exercises</h3>
               <p className="text-muted-foreground">Explore our full exercise library</p>
             </Card>
@@ -100,7 +108,7 @@ const Dashboard = () => {
 
           <Link to="/workout-log">
             <Card className="p-8 text-center hover:shadow-glow transition-all cursor-pointer gradient-card">
-              <Activity className="w-12 h-12 mx-auto mb-4 text-secondary" />
+              <Activity className="w-12 h-12 mx-auto mb-4 text-accent" />
               <h3 className="text-xl font-bold mb-2">Log Workout</h3>
               <p className="text-muted-foreground">Track your training session</p>
             </Card>
@@ -108,7 +116,7 @@ const Dashboard = () => {
 
           <Link to="/nutrition">
             <Card className="p-8 text-center hover:shadow-glow transition-all cursor-pointer gradient-card">
-              <Apple className="w-12 h-12 mx-auto mb-4 text-accent" />
+              <Apple className="w-12 h-12 mx-auto mb-4 text-success" />
               <h3 className="text-xl font-bold mb-2">Log Meal</h3>
               <p className="text-muted-foreground">Track your daily nutrition</p>
             </Card>
