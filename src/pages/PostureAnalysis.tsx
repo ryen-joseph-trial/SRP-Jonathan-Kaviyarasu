@@ -9,9 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 const PostureAnalysis = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [repCount, setRepCount] = useState(0);
+  const [setCount, setSetCount] = useState(1);
   const [feedback, setFeedback] = useState<{type: 'good' | 'warning', message: string} | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const monitoringInterval = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
 
   const startCamera = async () => {
@@ -22,14 +26,16 @@ const PostureAnalysis = () => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        await videoRef.current.play();
         streamRef.current = stream;
         setIsStreaming(true);
         toast({
           title: "Camera Started",
-          description: "Position yourself in frame and click Analyze",
+          description: "Position yourself in frame and start monitoring",
         });
       }
     } catch (error) {
+      console.error("Camera error:", error);
       toast({
         title: "Camera Access Denied",
         description: "Please allow camera access to use posture analysis",
@@ -44,7 +50,12 @@ const PostureAnalysis = () => {
       streamRef.current = null;
       setIsStreaming(false);
       setAnalyzing(false);
+      setIsMonitoring(false);
       setFeedback(null);
+      if (monitoringInterval.current) {
+        clearInterval(monitoringInterval.current);
+        monitoringInterval.current = null;
+      }
     }
   };
 
@@ -67,6 +78,58 @@ const PostureAnalysis = () => {
       setFeedback(randomFeedback);
       setAnalyzing(false);
     }, 2000);
+  };
+
+  const startMonitoring = () => {
+    setIsMonitoring(true);
+    setRepCount(0);
+    toast({
+      title: "Monitoring Started",
+      description: "Real-time posture monitoring active",
+    });
+
+    // Simulate real-time rep counting
+    monitoringInterval.current = setInterval(() => {
+      const shouldCountRep = Math.random() > 0.7;
+      if (shouldCountRep) {
+        setRepCount(prev => {
+          const newRep = prev + 1;
+          if (newRep % 10 === 0) {
+            setSetCount(s => s + 1);
+            toast({
+              title: "Set Complete!",
+              description: `Great job! Moving to set ${Math.floor(newRep / 10) + 1}`,
+            });
+          }
+          return newRep;
+        });
+      }
+
+      // Simulate feedback
+      const feedbacks = [
+        { type: 'good' as const, message: 'Perfect form! Keep your core tight.' },
+        { type: 'warning' as const, message: 'Lower your hips slightly for better form.' },
+        { type: 'good' as const, message: 'Excellent range of motion!' },
+        { type: 'warning' as const, message: 'Keep your back straight throughout the movement.' },
+      ];
+      
+      if (Math.random() > 0.5) {
+        const randomFeedback = feedbacks[Math.floor(Math.random() * feedbacks.length)];
+        setFeedback(randomFeedback);
+      }
+    }, 3000);
+  };
+
+  const stopMonitoring = () => {
+    setIsMonitoring(false);
+    if (monitoringInterval.current) {
+      clearInterval(monitoringInterval.current);
+      monitoringInterval.current = null;
+    }
+    toast({
+      title: "Monitoring Stopped",
+      description: `Session complete: ${repCount} reps across ${setCount} sets`,
+    });
   };
 
   useEffect(() => {
@@ -97,6 +160,7 @@ const PostureAnalysis = () => {
                   playsInline
                   muted
                   className="w-full h-full object-cover mirror"
+                  style={{ display: 'block' }}
                 />
                 {analyzing && (
                   <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center">
@@ -118,6 +182,20 @@ const PostureAnalysis = () => {
             )}
           </div>
 
+          {/* Rep Counter */}
+          {isStreaming && isMonitoring && (
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <Card className="p-4 text-center bg-primary/10">
+                <div className="text-4xl font-bold text-primary">{repCount}</div>
+                <div className="text-sm text-muted-foreground">Reps</div>
+              </Card>
+              <Card className="p-4 text-center bg-secondary/10">
+                <div className="text-4xl font-bold text-secondary">{setCount}</div>
+                <div className="text-sm text-muted-foreground">Sets</div>
+              </Card>
+            </div>
+          )}
+
           {/* Controls */}
           <div className="flex gap-3 mb-6">
             {!isStreaming ? (
@@ -138,13 +216,31 @@ const PostureAnalysis = () => {
                   <CameraOff className="w-5 h-5 mr-2" />
                   Stop Camera
                 </Button>
-                <Button 
-                  onClick={analyzePosture} 
-                  disabled={analyzing}
-                  className="gradient-primary text-white flex-1"
-                >
-                  {analyzing ? 'Analyzing...' : 'Analyze Posture'}
-                </Button>
+                {!isMonitoring ? (
+                  <>
+                    <Button 
+                      onClick={analyzePosture} 
+                      disabled={analyzing}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {analyzing ? 'Analyzing...' : 'Quick Check'}
+                    </Button>
+                    <Button 
+                      onClick={startMonitoring} 
+                      className="gradient-primary text-white flex-1"
+                    >
+                      Start Monitoring
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    onClick={stopMonitoring} 
+                    className="gradient-accent text-white flex-1"
+                  >
+                    Stop Monitoring
+                  </Button>
+                )}
               </>
             )}
           </div>

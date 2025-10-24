@@ -75,10 +75,17 @@ const Exercises = () => {
                 ))}
               </div>
               
-              <div className="flex justify-between items-center text-sm text-muted-foreground">
+              <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
                 <span>~{exercise.caloriesPerMinute} cal/min</span>
                 <Badge className="capitalize">{exercise.category}</Badge>
               </div>
+
+              <Link to="/posture" className="block">
+                <Button className="w-full gradient-primary text-white" size="sm">
+                  <Camera className="w-4 h-4 mr-2" />
+                  Start Monitoring
+                </Button>
+              </Link>
             </Card>
           ))}
         </div>
