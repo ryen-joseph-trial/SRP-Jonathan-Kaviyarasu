@@ -204,6 +204,10 @@ const PostureAnalysis = () => {
             <Dumbbell className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Exercises</span>
           </Link>
+          <Link to="/posture" className="flex flex-col items-center text-primary">
+            <Camera className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">Posture</span>
+          </Link>
           <Link to="/nutrition" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
             <Apple className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Nutrition</span>

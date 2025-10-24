@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { exercises, Exercise } from "@/lib/exercises";
-import { Activity, Apple, Dumbbell, Menu } from "lucide-react";
+import { Activity, Apple, Dumbbell, Menu, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Exercises = () => {
@@ -94,6 +94,10 @@ const Exercises = () => {
           <Link to="/exercises" className="flex flex-col items-center text-primary">
             <Dumbbell className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Exercises</span>
+          </Link>
+          <Link to="/posture" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
+            <Camera className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">Posture</span>
           </Link>
           <Link to="/nutrition" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
             <Apple className="w-6 h-6 mb-1" />

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getCurrentUser, getMeals, addMeal, Meal } from "@/lib/storage";
-import { Activity, Apple, Dumbbell, Menu, Plus } from "lucide-react";
+import { Activity, Apple, Dumbbell, Menu, Plus, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -247,6 +247,10 @@ const Nutrition = () => {
           <Link to="/exercises" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
             <Dumbbell className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Exercises</span>
+          </Link>
+          <Link to="/posture" className="flex flex-col items-center text-muted-foreground hover:text-foreground">
+            <Camera className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">Posture</span>
           </Link>
           <Link to="/nutrition" className="flex flex-col items-center text-primary">
             <Apple className="w-6 h-6 mb-1" />
