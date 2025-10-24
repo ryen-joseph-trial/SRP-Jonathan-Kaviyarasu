@@ -3,139 +3,81 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Camera, CameraOff, Activity, Apple, Dumbbell, Menu, CheckCircle, AlertCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { usePose } from "@/hooks/usePose";
 
 const PostureAnalysis = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [isMonitoring, setIsMonitoring] = useState(false);
-  const [repCount, setRepCount] = useState(0);
-  const [setCount, setSetCount] = useState(1);
-  const [feedback, setFeedback] = useState<{type: 'good' | 'warning', message: string} | null>(null);
+  const [feedback, setFeedback] = useState<{ type: "good" | "warning"; message: string } | null>(null);
+
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const monitoringInterval = useRef<NodeJS.Timeout | null>(null);
+
   const { toast } = useToast();
+  const [params] = useSearchParams();
+  const exerciseParam = (params.get("exercise") || "").toLowerCase();
+  const exerciseKind = exerciseParam.includes("squat")
+    ? ("squat" as const)
+    : exerciseParam.includes("push")
+    ? ("pushup" as const)
+    : exerciseParam.includes("curl")
+    ? ("bicep_curl" as const)
+    : ("generic" as const);
+
+  const { ready, isMonitoring, repCount, setCount, start, stop, quickCheck } = usePose(
+    videoRef,
+    canvasRef,
+    exerciseKind,
+    (type, message) => setFeedback({ type, message })
+  );
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user', width: 1280, height: 720 } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 1280, height: 720 },
+        audio: false,
       });
-      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
         streamRef.current = stream;
+        await videoRef.current.play();
         setIsStreaming(true);
-        toast({
-          title: "Camera Started",
-          description: "Position yourself in frame and start monitoring",
-        });
+        toast({ title: "Camera Started", description: "Position yourself in frame and start monitoring" });
       }
-    } catch (error) {
-      console.error("Camera error:", error);
-      toast({
-        title: "Camera Access Denied",
-        description: "Please allow camera access to use posture analysis",
-        variant: "destructive",
-      });
+    } catch (e) {
+      console.error("Camera error", e);
+      toast({ title: "Camera Access Denied", description: "Please allow camera access", variant: "destructive" });
     }
   };
 
   const stopCamera = () => {
+    stop();
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
-      setIsStreaming(false);
-      setAnalyzing(false);
-      setIsMonitoring(false);
-      setFeedback(null);
-      if (monitoringInterval.current) {
-        clearInterval(monitoringInterval.current);
-        monitoringInterval.current = null;
-      }
     }
-  };
-
-  const analyzePosture = () => {
-    setAnalyzing(true);
+    setIsStreaming(false);
+    setAnalyzing(false);
     setFeedback(null);
-    
-    // Simulate AI analysis
-    setTimeout(() => {
-      const feedbacks = [
-        { type: 'good' as const, message: 'Great posture! Your spine alignment looks excellent. Keep it up!' },
-        { type: 'warning' as const, message: 'Try to keep your shoulders back and chest open. Avoid slouching forward.' },
-        { type: 'good' as const, message: 'Perfect form! Your core is engaged and your back is straight.' },
-        { type: 'warning' as const, message: 'Tilt your head slightly up. Looking down can strain your neck.' },
-        { type: 'good' as const, message: 'Excellent! Your weight is evenly distributed. Maintain this position.' },
-        { type: 'warning' as const, message: 'Keep your knees slightly bent to reduce lower back tension.' },
-      ];
-      
-      const randomFeedback = feedbacks[Math.floor(Math.random() * feedbacks.length)];
-      setFeedback(randomFeedback);
-      setAnalyzing(false);
-    }, 2000);
   };
 
-  const startMonitoring = () => {
-    setIsMonitoring(true);
-    setRepCount(0);
-    toast({
-      title: "Monitoring Started",
-      description: "Real-time posture monitoring active",
-    });
-
-    // Simulate real-time rep counting
-    monitoringInterval.current = setInterval(() => {
-      const shouldCountRep = Math.random() > 0.7;
-      if (shouldCountRep) {
-        setRepCount(prev => {
-          const newRep = prev + 1;
-          if (newRep % 10 === 0) {
-            setSetCount(s => s + 1);
-            toast({
-              title: "Set Complete!",
-              description: `Great job! Moving to set ${Math.floor(newRep / 10) + 1}`,
-            });
-          }
-          return newRep;
-        });
-      }
-
-      // Simulate feedback
-      const feedbacks = [
-        { type: 'good' as const, message: 'Perfect form! Keep your core tight.' },
-        { type: 'warning' as const, message: 'Lower your hips slightly for better form.' },
-        { type: 'good' as const, message: 'Excellent range of motion!' },
-        { type: 'warning' as const, message: 'Keep your back straight throughout the movement.' },
-      ];
-      
-      if (Math.random() > 0.5) {
-        const randomFeedback = feedbacks[Math.floor(Math.random() * feedbacks.length)];
-        setFeedback(randomFeedback);
-      }
-    }, 3000);
-  };
-
-  const stopMonitoring = () => {
-    setIsMonitoring(false);
-    if (monitoringInterval.current) {
-      clearInterval(monitoringInterval.current);
-      monitoringInterval.current = null;
+  const handleQuickCheck = () => {
+    if (!isStreaming) {
+      toast({ title: "Start camera first", description: "Turn on the camera to analyze", variant: "destructive" });
+      return;
     }
-    toast({
-      title: "Monitoring Stopped",
-      description: `Session complete: ${repCount} reps across ${setCount} sets`,
-    });
+    setAnalyzing(true);
+    const res = quickCheck();
+    if (res) setFeedback(res);
+    setAnalyzing(false);
   };
 
   useEffect(() => {
-    return () => {
-      stopCamera();
-    };
+    document.title = "Posture Analysis – SmartFitness";
+    return () => stopCamera();
   }, []);
 
   return (
@@ -160,8 +102,9 @@ const PostureAnalysis = () => {
                   playsInline
                   muted
                   className="w-full h-full object-cover mirror"
-                  style={{ display: 'block' }}
+                  style={{ display: "block" }}
                 />
+                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
                 {analyzing && (
                   <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center">
                     <div className="text-center text-white">
@@ -182,7 +125,7 @@ const PostureAnalysis = () => {
             )}
           </div>
 
-          {/* Rep Counter */}
+          {/* Rep/Set Counters */}
           {isStreaming && isMonitoring && (
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="p-4 text-center bg-primary/10">
@@ -199,45 +142,27 @@ const PostureAnalysis = () => {
           {/* Controls */}
           <div className="flex gap-3 mb-6">
             {!isStreaming ? (
-              <Button 
-                onClick={startCamera} 
-                className="gradient-primary text-white flex-1"
-              >
+              <Button onClick={startCamera} className="gradient-primary text-white flex-1">
                 <Camera className="w-5 h-5 mr-2" />
                 Start Camera
               </Button>
             ) : (
               <>
-                <Button 
-                  onClick={stopCamera} 
-                  variant="outline" 
-                  className="flex-1"
-                >
+                <Button onClick={stopCamera} variant="outline" className="flex-1">
                   <CameraOff className="w-5 h-5 mr-2" />
                   Stop Camera
                 </Button>
                 {!isMonitoring ? (
                   <>
-                    <Button 
-                      onClick={analyzePosture} 
-                      disabled={analyzing}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      {analyzing ? 'Analyzing...' : 'Quick Check'}
+                    <Button onClick={handleQuickCheck} disabled={!ready || analyzing} variant="outline" className="flex-1">
+                      {analyzing ? "Analyzing..." : "Quick Check"}
                     </Button>
-                    <Button 
-                      onClick={startMonitoring} 
-                      className="gradient-primary text-white flex-1"
-                    >
+                    <Button onClick={start} disabled={!ready} className="gradient-primary text-white flex-1">
                       Start Monitoring
                     </Button>
                   </>
                 ) : (
-                  <Button 
-                    onClick={stopMonitoring} 
-                    className="gradient-accent text-white flex-1"
-                  >
+                  <Button onClick={stop} className="gradient-accent text-white flex-1">
                     Stop Monitoring
                   </Button>
                 )}
@@ -247,17 +172,15 @@ const PostureAnalysis = () => {
 
           {/* Feedback */}
           {feedback && (
-            <Card className={`p-4 ${feedback.type === 'good' ? 'bg-success/10 border-success' : 'bg-secondary/10 border-secondary'}`}>
+            <Card className={`p-4 ${feedback.type === "good" ? "bg-success/10 border-success" : "bg-secondary/10 border-secondary"}`}>
               <div className="flex items-start gap-3">
-                {feedback.type === 'good' ? (
+                {feedback.type === "good" ? (
                   <CheckCircle className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
                 ) : (
                   <AlertCircle className="w-6 h-6 text-secondary flex-shrink-0 mt-0.5" />
                 )}
                 <div>
-                  <h3 className="font-semibold mb-1">
-                    {feedback.type === 'good' ? 'Good Posture!' : 'Posture Tip'}
-                  </h3>
+                  <h3 className="font-semibold mb-1">{feedback.type === "good" ? "Good Posture!" : "Posture Tip"}</h3>
                   <p className="text-sm text-muted-foreground">{feedback.message}</p>
                 </div>
               </div>

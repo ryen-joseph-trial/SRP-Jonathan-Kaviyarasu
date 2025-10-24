@@ -80,7 +80,7 @@ const Exercises = () => {
                 <Badge className="capitalize">{exercise.category}</Badge>
               </div>
 
-              <Link to="/posture" className="block">
+              <Link to={`/posture?exercise=${exercise.id}`} className="block">
                 <Button className="w-full gradient-primary text-white" size="sm">
                   <Camera className="w-4 h-4 mr-2" />
                   Start Monitoring
