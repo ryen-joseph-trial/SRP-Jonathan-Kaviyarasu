@@ -112,32 +112,31 @@ const PostureAnalysis = () => {
       <div className="max-w-4xl mx-auto px-6 mt-6">
         <Card className="p-6 shadow-card">
           <div className="relative bg-muted rounded-lg overflow-hidden aspect-video mb-6">
-            {isStreaming ? (
-              <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="absolute inset-0 w-full h-full object-cover mirror"
-                  style={{ display: "block" }}
-                />
-                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none mirror" />
-                {analyzing && (
-                  <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4"></div>
-                      <p className="text-lg font-semibold">Analyzing your posture...</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover mirror"
+              style={{ display: "block" }}
+            />
+            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none mirror" />
+
+            {!isStreaming && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <Camera className="w-16 h-16 mx-auto mb-4 opacity-50" />
                   <p className="text-lg font-semibold">Camera is off</p>
-                  <p className="text-sm mt-2">Click "Start Camera" to begin</p>
+                  <p className="text-sm mt-2">Click \"Start Camera\" to begin</p>
+                </div>
+              </div>
+            )}
+
+            {analyzing && (
+              <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-lg font-semibold">Analyzing your posture...</p>
                 </div>
               </div>
             )}
