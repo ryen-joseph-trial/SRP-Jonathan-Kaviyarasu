@@ -40,10 +40,28 @@ const PostureAnalysis = () => {
         video: { facingMode: "user", width: 1280, height: 720 },
         audio: false,
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      const videoEl = videoRef.current;
+      if (videoEl) {
+        videoEl.srcObject = stream;
         streamRef.current = stream;
-        await videoRef.current.play();
+        // Ensure inline playback on mobile Safari and autoplay policies
+        videoEl.setAttribute("playsinline", "true");
+        videoEl.muted = true;
+        const tryPlay = async () => {
+          try {
+            await videoEl.play();
+          } catch (err) {
+            console.error("video.play() failed", err);
+          }
+        };
+        if (videoEl.readyState >= 2) {
+          // HAVE_CURRENT_DATA
+          tryPlay();
+        } else {
+          videoEl.onloadedmetadata = () => {
+            tryPlay();
+          };
+        }
         setIsStreaming(true);
         toast({ title: "Camera Started", description: "Position yourself in frame and start monitoring" });
       }
@@ -104,7 +122,7 @@ const PostureAnalysis = () => {
                   className="w-full h-full object-cover mirror"
                   style={{ display: "block" }}
                 />
-                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+                <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none mirror" />
                 {analyzing && (
                   <div className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex items-center justify-center">
                     <div className="text-center text-white">
