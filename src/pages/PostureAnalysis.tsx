@@ -119,7 +119,7 @@ const PostureAnalysis = () => {
                   autoPlay
                   playsInline
                   muted
-                  className="w-full h-full object-cover mirror"
+                  className="absolute inset-0 w-full h-full object-cover mirror"
                   style={{ display: "block" }}
                 />
                 <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none mirror" />

@@ -6,7 +6,7 @@ export type PoseResult = {
 
 export async function createPoseLandmarker() {
   const fileset = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.8/wasm"
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
   );
   const landmarker = await PoseLandmarker.createFromOptions(fileset, {
     baseOptions: {
